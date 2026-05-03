@@ -844,7 +844,7 @@ async function submitKYC() {
   try {
     // ── Upload photo to ImgBB ────────────────────────────
     let photoLink = 'Photo upload skipped (key not set)';
-    if (IMGBB_API_KEY !== '0e4c8ce16d0eba8c9552b8599c42d39f') {
+    if (IMGBB_API_KEY !== 'YOUR_IMGBB_API_KEY') {
       const imgForm = new FormData();
       imgForm.append('key', IMGBB_API_KEY);
       imgForm.append('image', photoDataUrl.split(',')[1]); // base64 only
@@ -858,7 +858,7 @@ async function submitKYC() {
     }
 
     // ── Send email via EmailJS ────────────────────────────
-    if (EMAILJS_SERVICE_ID === 'service_ilarwkp') {
+    if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') {
       // Placeholder mode — simulate success
       await new Promise(r => setTimeout(r, 1000));
     } else {
